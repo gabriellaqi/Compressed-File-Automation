@@ -1,0 +1,36 @@
+csvfile = input("Copy the csv file name here\n")
+
+with open(csvfile, 'rb') as infile:
+    csv_bytes = infile.read()
+
+import bz2
+
+bz2file = csvfile + '.bz2'
+
+# Compress the csv file into bz2
+
+with bz2.BZ2File(bz2file, 'w') as outfile:
+    outfile.write(csv_bytes)
+
+# CSV Meta File Generation
+
+import csv
+
+metafile = csvfile[0:-4] + '.meta.csv'
+
+count = len(open(csvfile).readlines())
+
+import hashlib
+
+with open(bz2file, 'rb') as bz2:
+    byte = bz2.read()
+    readable_hash = hashlib.sha256(byte).hexdigest()
+
+# generate the meta json file
+
+with open(metafile, 'w', newline = '') as outmeta:
+    meta = ['META', 'false', csvfile, '', csvfile, '2.2.1',
+            bz2file + '@' + str(count) + '@@' + readable_hash, ""]
+    writer = csv.DictWriter(outmeta, fieldnames = meta)
+    
+    writer.writeheader()
