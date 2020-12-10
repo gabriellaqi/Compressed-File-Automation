@@ -1,0 +1,55 @@
+# Ingestion File Name Input
+
+import pandas as pd
+
+filename = input('Ingestion Error File Name: ')
+
+ingestionfile = pd.read_csv(filename, header = None, sep = '\n')
+ingestionfile = ingestionfile[0].str.split(',', expand = True)
+
+# Error Code Input
+# slice useful columns
+
+info = ingestionfile.iloc[:, [0, 2, 3]]
+info.columns = ['errorcode', 'errorROEID', 'firmROEID']
+
+# shows the distinct error code
+
+errorlist = []
+for row in info['errorcode']:
+    if row not in errorlist:
+        errorlist.append(row)
+
+print(errorlist)
+errorcode = input('Error code: ')
+
+import json
+
+# create deletion json file using errorROEID
+
+errorroeid = info.loc[:, 'errorROEID'][info['errorcode'].str.contains(errorcode)]
+jsonfilename = '' + filename[5:20] + 'OrderEvents_90' + errorcode + '.json'
+with open(jsonfilename, 'w') as errorjson:
+    for i in errorroeid:
+        line = {"actionType": "DEL", "errorROEID": int(i)}
+        json.dump(line, errorjson)
+        errorjson.write("\n")
+
+# compress deletion json file to bz2
+
+import bz2
+
+bz2file = jsonfilename + '.bz2'
+
+with bz2.BZ2File(bz2file, 'w') as outfile:
+    for i in errorroeid:
+        line = {"actionType", "DEL", "firmROEID": i}
+        json_str = json.dumps(line) + '\n'
+        json_bytes = json_str.encode('utf-8')
+        outfile.write(json_bytes)
+        
+# Meta File Generation
+
+import time
+
+count = len()
