@@ -52,4 +52,32 @@ with bz2.BZ2File(bz2file, 'w') as outfile:
 
 import time
 
-count = len()
+count = len(open(jsonfilename).readlines())
+
+import hashlib
+
+with open(bz2file, 'rb') as bz2:
+    bytes = bz2.read()
+    readable_hash = hashlib.sha256(bytes).hexdigest()
+    
+meta = {
+    "type": "META",
+    "doneForDay": bool(""),
+    "fileGenerationDate": jsonfiename[12:20],
+    "reporter": "",
+    "submitter": "",
+    "fileVersion": "2.2.1",
+    "files": [
+        {
+        "fileName": bz2file,
+        "recordCount": count,
+        
+        "compressedHash": readable_hash
+        }
+    ]
+}
+
+# generate the meta json file
+
+with open(jsonfilename[0:-5] + '.meta.json', 'w') as metafile:
+    json.dump(meta, metafile)
