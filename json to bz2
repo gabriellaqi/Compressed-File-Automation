@@ -1,0 +1,19 @@
+import json
+import bz2
+
+# replace the file name
+
+jsonfile = input("Copy the json file name here\n")
+
+with open(jsonfile) as infile:
+    data = json.load(infile)
+
+json_str = json.dumps(data) + "\n"
+json_bytes = json_str.encode('utf-8')
+
+bz2file = jsonfile + '.bz2'
+
+# compress the json file into bz2
+
+with bz2.BZ2File(bz2file, 'w') as outfile:
+    outfile.write(json_bytes)
