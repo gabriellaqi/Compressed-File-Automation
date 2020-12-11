@@ -1,0 +1,91 @@
+# Input symbol file
+
+with open('equity_symbol_eod_20200708.dat', 'r') as f:
+    next(f) # skip first row
+    df = pd.DataFrame(l.rstrip().split('|') for l in f)
+
+symbol = df.iloc[:, [0]]
+symbol.columns = ['Symbol']
+col_one_list = symbol['Symbol'].tolist()
+
+# Input ROUTE gzip file name
+
+import pandas as pd
+
+# Change the ROUTE filename
+
+routes_filename = 'part.csv.gz'
+
+routes = pd.read_csv(routes_filename, compression = 'gzip', header = 0, sep = '|', quotechar = '"', error_bad_lines = False)
+routes_header = pd.read_csv(routes_filename, compression = 'gzip', header = 0, quotechar = '"', error_bad_lines = False)
+
+# Match symbols with ROUTE and COR
+
+routes_match = routes[routes.UsSymbol.isin(col_one_list)]
+
+new_routes = routes_match.copy()
+new_routes['ActionType'] = 'COR'
+
+# Export ROUTE COR file
+
+final_routes = new_routes.replace(np.nan, '', regex = True)
+
+routes_data = final_routes[final_routes.columns].apply(lambda x: '|'.join(x.astype(str)), axis = 1)
+
+final_routes_export = pd.DataFrame(routes_data, columns = routes_header.columns)
+
+# Specify export ROUTE COR filename
+
+routes_export = 'routes.csv'
+final_routes_export.to_csv(routes_export, index = False)
+
+# Input EXEC gzip file name
+
+import pandas as pd
+
+# Change the Trades filename
+
+trades_filename = 'part.csv.gz'
+
+trades = pd.read_csv(trades_filename, compression = 'gzip', header = 0, sep = '|', quotechar = '"', error_bad_lines = False)
+trades_header = pd.read_csv(trades_filename, compression = 'gzip', header = 0, quotechar = '"', error_bad_lines = False)
+
+# Match symbols with EXEC and COR
+
+trades_match = trades[trades.UsSymbol.isin(col_one_list)]
+
+new_trades = trades_match.copy()
+new_traes['ActionType'] = 'COR'
+
+# Export EXEC COR file
+
+final_trades = new_trades.replace(np.nan, '', regex = True)
+
+trades_data = final_trades[final_trades.columns].apply(lambda x: '|', join(x.astype(str)), axis = 1)
+
+final_trades_export = pd.DataFrame(trades_data, columns = trades_header.columns)
+
+# Specify export EXEC COR filename
+
+trades_export = 'trades.csv'
+final_trades_export.to_csv(trades_export, index = False)
+
+# CSV File Compression BZ2
+
+with open(routes_export, 'rb') as infile:
+    routes_bytes = infile.read()
+
+import bz2
+
+routes_bz2file = routes_export + '.bz2'
+
+with bz2.BZ2File(routes_bz2file, 'w') as outfile:
+    outfile.write(routes_bytes)
+    
+with open(trades_export, 'rb') as infile:
+    trades_bytes = infile.read()
+
+trades_bz2file = trades_export = '.bz2'
+
+with bz2.BZ2File(trades_bz2file, 'w') as outfile:
+    outfile.write(trades_bytes)
